@@ -1,4 +1,4 @@
-function plot_results(X,U,dh,N)
+function plot_results(X,U,dh,N,cls)
 
    z = 0:dh:dh*N;
    x = zeros(N+1,1);
@@ -20,6 +20,10 @@ function plot_results(X,U,dh,N)
       if i>1
         t(i) = t(i-1) - dh/2*(1/(v(i)*sin(r(i)))+1/(v(i-1)*sin(r(i-1))));
       end
+   end
+   
+   if cls
+       close all;
    end
    
    figure

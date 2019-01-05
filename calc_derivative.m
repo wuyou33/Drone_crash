@@ -8,7 +8,7 @@ syms D(v,a,w) L(v,a,w) M(v,a,w)
 
 % TODO: add accurate D L M model
 D(v,a,w) = 0.0*v*v;
-L(v,a,w) = 0.0*v*v + 0*w*a;
+L(v,a,w) = 0.0*v*v + 1*w;
 M(v,a,w) = 0.0*D;
 
 %%
@@ -39,5 +39,5 @@ Bs = [diff(dx,u);
      diff(dq,u);
      diff(dw,u)];
 
-bs = [dx;dv;dr;da;dq;dw] - As*Xs - Bs*Us; 
+bs = fs - As*Xs - Bs*Us; 
 end
