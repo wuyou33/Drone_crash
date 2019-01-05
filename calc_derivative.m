@@ -7,9 +7,9 @@ syms D(v,a,w) L(v,a,w) M(v,a,w)
 
 
 % TODO: add accurate D L M model
-D(v,a,w) = 0.01*v*v;
-L(v,a,w) = 0.1*v*v + w*a;
-M(v,a,w) = 0.1*D;
+D(v,a,w) = 0.0*v*v;
+L(v,a,w) = 0.0*v*v + 0*w*a;
+M(v,a,w) = 0.0*D;
 
 %%
 % f(x,u):                               % states:

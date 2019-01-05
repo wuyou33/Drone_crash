@@ -1,6 +1,5 @@
 function [X,U] = traj_init_dronecrash(X0,U0,hf,N)
 % generate init guess of the falling trajectory
-% The initial traj assumes a constant path angle and zero drag.
 
 dh = hf/N;
 r_c = -60/57.3;
@@ -16,7 +15,7 @@ U = cell(N+1,1); U{1}=U0;
 for i = 2:N+1
    x(i) = x(i-1) - dh*v(i-1)*cot(r_c);
    v(i) = v(i-1) + dh*g/v(i-1);
-   r(i) = r(i-1);
+   r(i) = r(i-1) + (r_c-X0(3))/N;
    a(i) = a(i-1);
    q(i) = q(i-1);
    w(i) = w(i-1);

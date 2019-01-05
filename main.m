@@ -20,13 +20,16 @@ P = [0.3;               % mass
      9.8124;            % g
      50];               % act_dyn
 
-N = 10;
+umax = 10;
+umin = 0;
+
+N = 50;
 n = length(X0);
 m = 1;
 
 [X,U] =  traj_init_dronecrash(X0,U0,zf,N);
 
-iter_max = 10;
+iter_max = 1;
 
 dh = zf/N;
 M = cell(N+1,2*(N+1));
@@ -63,13 +66,35 @@ for i = 2:N+1
     M{i,N+1+i}  = G_i;
     
     F{i,1}  =  b_i_1+b_i; 
+    display(['i = ', num2str(i)]);
 end
 
 M_calc = cell2mat(M);
 F_calc = -dh/2*cell2mat(F);
 
 %% Optimization
+id_xf = N*n+1;
+id_v  = (0:N)*n+2;
+id_r  = (0:N)*n+3;
+
+f_obj = zeros((N+1)*(n+m),1); 
+lb    = -inf((N+1)*(n+m),1);
+ub    =  inf((N+1)*(n+m),1);
+lb(n*(N+1)+1:end) = umin;
+ub(n*(N+1)+1:end) = umax;
+ub(id_r)  = 0;
+lb(id_v)  = 0;
+
+f_obj(id_xf) = 1;
+
+Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+
+for i = 1:N+1
+   X{i} = Z((i-1)*n+1:i*n);
+   U{i} = Z(n*(N+1)+i);
+end
 
 end
 
 %% Plot results
+plot_results(X,U,dh,N);
