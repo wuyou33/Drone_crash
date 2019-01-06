@@ -4,6 +4,7 @@ close all
 clear all
 
 addpath('aero_model');
+%%
 % [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative();
 
 %% Prameters & Initialization
@@ -15,17 +16,14 @@ X0 = [0;                % x0
       -30/57.3;         % gamma0
       -30/57.3;         % alpha0
       0;                % q0
-      0];             % omega0^2 (normalized)
+      0];               % omega0^2 (normalized)
 
-U0 = X0(6);             % u0 (normalized)
+U0 =   0;             % u0 (normalized)
 
 P = [0.3;               % mass
      0.0013;            % Iy
      9.8124;            % g
      50];               % act_dyn
-
-umax = 1.2;
-umin = 0;
 
 N = 100;
 n = length(X0);
@@ -118,10 +116,10 @@ ub(id_a) = min(Z_last(id_a) + da_itr_tol, inf);    % alpha < 90
 lb(id_a) = max(Z_last(id_a) - da_itr_tol,-inf);    % alpha > -90
 ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
 lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
-ub(id_w) = min(Z_last(id_w) + dw_itr_tol, umax);    % omega < umax
-lb(id_w) = max(Z_last(id_w) - dw_itr_tol, umin);    % omega > umin
-ub(id_u) = min(Z_last(id_u) + du_itr_tol, umax);    % u < umax
-lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
+ub(id_w) = min(Z_last(id_w) + dw_itr_tol, 1.2);    % omega < omega_max
+lb(id_w) = max(Z_last(id_w) - dw_itr_tol, 0);    % omega > omega_min
+ub(id_u) = min(Z_last(id_u) + du_itr_tol, 1);    % u < umax
+lb(id_u) = max(Z_last(id_u) - du_itr_tol, -1);    % u > umin
 
 % Objective function, 
 f_obj = zeros((N+1)*(n+m),1); 

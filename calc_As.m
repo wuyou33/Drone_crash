@@ -33,7 +33,7 @@ A = ...
   0,                - (2*(g*m*cos(r) - L))/(m*v^3*sin(r)) - Lv/(m*v^2*sin(r)),                         - g/v^2 - (cos(r)*(g*m*cos(r) - L))/(m*v^2*sin(r)^2), -La/(m*v^2*sin(r)),             0, -Lw/(m*v^2*sin(r));
   0, q/(v^2*sin(r)) + (2*(g*m*cos(r) - L))/(m*v^3*sin(r)) + Lv/(m*v^2*sin(r)), g/v^2 + (q*cos(r))/(v*sin(r)^2) + (cos(r)*(g*m*cos(r) - L))/(m*v^2*sin(r)^2),  La/(m*v^2*sin(r)), -1/(v*sin(r)),  Lw/(m*v^2*sin(r));
   0,                                     M/(Iy*v^2*sin(r)) - Mv/(Iy*v*sin(r)),                                                   (cos(r)*M)/(Iy*v*sin(r)^2),  -Ma/(Iy*v*sin(r)),             0,  -Mw/(Iy*v*sin(r));
-  0,                                  (s*u)/(v^2*sin(r)) - (s*w)/(v^2*sin(r)),                        (s*u*cos(r))/(v*sin(r)^2) - (s*w*cos(r))/(v*sin(r)^2),                  0,             0,       s/(v*sin(r))];
+  0,                                                       (s*u)/(v^2*sin(r)),                                                    (s*u*cos(r))/(v*sin(r)^2),                  0,             0,                 0];
  
     
 end

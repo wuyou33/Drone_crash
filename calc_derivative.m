@@ -7,9 +7,9 @@ syms D(v,a,w) L(v,a,w) M(v,a,w)
 
 
 % TODO: add accurate D L M model
-D(v,a,w) = 0.0*v*v;
-L(v,a,w) = 0.0*v*v + 1*w;
-M(v,a,w) = 0.0*D;
+% D(v,a,w) = 0.0*v*v;
+% L(v,a,w) = 0.0*v*v + 1*w;
+% M(v,a,w) = 0.0*D;
 
 %%
 % f(x,u):                               % states:
@@ -18,7 +18,7 @@ dv = (D+m*g*sin(r))/(m*v*sin(r));       % V
 dr = -(L-m*g*cos(r))/(m*v^2*sin(r));    % gamma
 da = -q/(v*sin(r))-dr;                  % alpha
 dq = -M/(Iy*v*sin(r));                  % q
-dw = s/(v*sin(r))*w - s/(v*sin(r))*u;   % omega^2
+dw = s/(v*sin(r))*u;   % omega^2
 
 fs = [dx;dv;dr;da;dq;dw];
 Xs = [x;v;r;a;q;w];

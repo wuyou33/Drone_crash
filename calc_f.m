@@ -17,12 +17,12 @@ LDM   = func_LDM(v,a,w);
 L = LDM(1); D = LDM(2); M = LDM(3);
 
 f = zeros(6,1);
-% f(x,u):                               % states:
+% f(x,u):                                 % states:
 f(1) = -cot(r);                           % X
 f(2) = (D+m*g*sin(r))/(m*v*sin(r));       % V
 f(3) = -(L-m*g*cos(r))/(m*v^2*sin(r));    % gamma
 f(4) = -q/(v*sin(r))-f(3);                % alpha
 f(5) = -M/(Iy*v*sin(r));                  % q
-f(6) = s/(v*sin(r))*w - s/(v*sin(r))*u;   % omega^2
+f(6) =   s/(v*sin(r))*u;                  % omega^2
 
 end

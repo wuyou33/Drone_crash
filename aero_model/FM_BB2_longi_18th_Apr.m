@@ -38,4 +38,5 @@ T2 = ones(size(u))* 2.145865e+00 + ...
 Fx = Fx;
 Fz = -(T0 + T1.*u1/1e6 + T2.*u2/1e6);
 My = M0 + M1.*u1/1e6 + M2.*u2/1e6;
+My = 0;
 end
