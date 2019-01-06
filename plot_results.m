@@ -18,40 +18,41 @@ function plot_results(X,U,dh,N,cls)
       w(i) = X{i}(6);
       u(i) = U{i}(1);
       if i>1
+        % estimate time using the trapezoidal rule
         t(i) = t(i-1) - dh/2*(1/(v(i)*sin(r(i)))+1/(v(i-1)*sin(r(i-1))));
       end
    end
    
-   if cls
+   if cls == 1
        close all;
    end
    
-   figure
+   figure(60)
    subplot(3,2,1);
-   plot(z,x); xlabel('Z [m]'); ylabel('x [m]');
+   plot(z,x); xlabel('Z [m]'); ylabel('x [m]'); hold on;
    subplot(3,2,2);
-   plot(z,v); xlabel('Z [m]'); ylabel('V [m/s]');
+   plot(z,v); xlabel('Z [m]'); ylabel('V [m/s]'); hold on;
    subplot(3,2,3);
-   plot(z,r); xlabel('Z [m]'); ylabel('\gamma [rad]');
+   plot(z,r); xlabel('Z [m]'); ylabel('\gamma [rad]'); hold on;
    subplot(3,2,4);
-   plot(z,a); xlabel('Z [m]'); ylabel('\alpha [rad]');
+   plot(z,a); xlabel('Z [m]'); ylabel('\alpha [rad]'); hold on;
    subplot(3,2,5);
-   plot(z,q); xlabel('Z [m]'); ylabel('q [rad/s]');
+   plot(z,q); xlabel('Z [m]'); ylabel('q [rad/s]'); hold on;
    subplot(3,2,6);
    plot(z,w); xlabel('Z [m]'); ylabel('omega^2'); hold on; 
    plot(z,u); legend('real','cmd');
    
-   figure
+   figure(61)
    subplot(3,2,1);
-   plot(t,x); xlabel('t [s]'); ylabel('x [m]');
+   plot(t,x); xlabel('t [s]'); ylabel('x [m]'); hold on;
    subplot(3,2,2);
-   plot(t,v); xlabel('t [s]'); ylabel('V [m/s]');
+   plot(t,v); xlabel('t [s]'); ylabel('V [m/s]'); hold on;
    subplot(3,2,3);
-   plot(t,r); xlabel('t [s]'); ylabel('\gamma [rad]');
+   plot(t,r); xlabel('t [s]'); ylabel('\gamma [rad]'); hold on;
    subplot(3,2,4);
-   plot(t,a); xlabel('t [s]'); ylabel('\alpha [rad]');
+   plot(t,a); xlabel('t [s]'); ylabel('\alpha [rad]'); hold on;
    subplot(3,2,5);
-   plot(t,q); xlabel('t [s]'); ylabel('q [rad/s]');
+   plot(t,q); xlabel('t [s]'); ylabel('q [rad/s]'); hold on;
    subplot(3,2,6);
    plot(t,w); xlabel('t [s]'); ylabel('omega^2'); hold on;
    plot(t,u); legend('real','cmd');

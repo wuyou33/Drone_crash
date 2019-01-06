@@ -1,17 +1,21 @@
-% This is the mains cript conducting trajectory optimization 
+%% This is the mains cript conducting trajectory optimization 
 
+close all
+clear all
+
+addpath('aero_model');
 % [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative();
 
 %% Prameters & Initialization
 
-zf = 100;               % initial height
+zf = 3;               % initial height
 
 X0 = [0;                % x0
-      30;               % v0
+      3;               % v0
       -30/57.3;         % gamma0
       -30/57.3;         % alpha0
       0;                % q0
-      2^2];             % omega0^2 (normalized)
+      1];             % omega0^2 (normalized)
 
 U0 = X0(6);             % u0 (normalized)
 
@@ -20,18 +24,18 @@ P = [0.3;               % mass
      9.8124;            % g
      50];               % act_dyn
 
-umax = 10;
+umax = 1.2;
 umin = 0;
 
-N = 50;
+N = 200;
 n = length(X0);
 m = 1;
 
-iter_max = 1;
-
-% aero model
-Func_LDM = @func_model_test;
-
+iter_max = 10;
+tol = 1e-6;
+%% aero model
+% Func_LDM = @func_model_test;
+Func_LDM = @func_model_18th_Apr;
 %% Init guess
 [X,U] =  traj_init_dronecrash(X0,U0,zf,N,P);
 Z = zeros((n+m)*(N+1),1);
@@ -39,6 +43,7 @@ for i = 1:N+1
     Z(n*(i-1)+1:n*i) = X{i};
     Z(n*(N+1)+i) = U{i};
 end
+Z_last = Z;
 %% Main loop
 dh = zf/N;
 M = cell(N+1,2*(N+1));
@@ -53,7 +58,6 @@ M{1,1} = eye(n);
 F{1,1} = -2/dh*X0;
 
 for k = 1:iter_max
-    tic
 %% Set matrice for descritization
 % M = zeros(n*n,(n+1)*n+(n+1)*m);[]
 for i = 2:N+1
@@ -87,6 +91,7 @@ F_calc = -dh/2*cell2mat(F);
 id_xf = N*n+1;
 id_v  = (0:N)*n+2;
 id_r  = (0:N)*n+3;
+id_w  = (0:N)*n+6;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -96,12 +101,14 @@ lb(n*(N+1)+1:end) = umin;
 ub(n*(N+1)+1:end) = umax;
 ub(id_r)  = -5/57.3;
 lb(id_v)  = 0;
+ub(id_w)  = umax;
+lb(id_w)  = umin;
 
 % Objective function, 
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = 1;
+f_obj(id_xf) = -1;
 
 % call tje solver
 Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
@@ -110,8 +117,15 @@ for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
    U{i} = Z(n*(N+1)+i);
 end
+plot_results(X,U,dh,N,0);
+
+% stop criteria
+if norm(Z-Z_last) < tol
+   break; 
+end
+Z_last = Z;
 
 end
 
 %% Plot results
-plot_results(X,U,dh,N,0);
+% plot_results(X,U,dh,N,0);
