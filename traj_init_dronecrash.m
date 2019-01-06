@@ -1,29 +1,33 @@
-function [X,U] = traj_init_dronecrash(X0,U0,hf,N, P)
-% generate init guess of the falling trajectory
+function [X,U] = traj_init_dronecrash(X0,U0,hf,N, P,func_LDM)
+% set U as constant U0 and numerically integrate the initial guess of the
+% optimal trajectory.
 
 dh = hf/N;
-g = P(3);
-
-x = zeros(N+1,1); v = zeros(N+1,1); r = zeros(N+1,1); 
-a = zeros(N+1,1); q = zeros(N+1,1); w = zeros(N+1,1);
-
-x(1) = X0(1); v(1) = X0(2); r(1) = X0(3); a(1) = X0(4); q(1) = X0(5); w(1) = X0(6);
 
 X = cell(N+1,1); X{1}=X0;
-U = cell(N+1,1); U{1}=U0;
+U = cell(N+1,1); 
+for i=1:N+1, U{i,1}=U0; end
 
-% TODO: change to RK4 to improve Numerical stability when gamma and V are
+% TODO: to improve Numerical stability when gamma and V are
 % small
-
 for i = 2:N+1
-   x(i) = x(i-1) + dh*(-cot(r(i-1)));
-   v(i) = v(i-1) + dh*g/v(i-1);
-   r(i) = r(i-1) + dh*g*cot(r(i-1))/v(i-1)^2;
-   a(i) = a(i-1);
-   q(i) = q(i-1);
-   w(i) = w(i-1);
-   
-   X{i} = [x(i);v(i);r(i);a(i);q(i);w(i)];
-   U{i} = U0;
+   X{i} = Rk_4(@calc_f,0,X{i-1},U{i-1},dh,P,func_LDM);
 end
+end
+
+function [X_next] =  Rk_4(F,time,X,U,step,param,func_LDM)
+    
+    e =[0.5,0.5,1.0,1.0,0.5];
+	px = X;
+	xw = X;
+        
+	for j=1:4        
+		[f] = feval(F,px,U,param,func_LDM);	
+
+        px = xw + e(j)*step*f;
+        X = X + e(j+1)*step*f/3.0;        
+    end
+   
+    X_next = X; 
+   
 end

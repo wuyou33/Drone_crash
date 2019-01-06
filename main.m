@@ -27,9 +27,10 @@ P = [0.3;               % mass
 umax = 1.2;
 umin = 0;
 
-N = 200;
+N = 100;
 n = length(X0);
 m = 1;
+dh = zf/N;
 
 iter_max = 10;
 tol = 1e-6;
@@ -37,15 +38,16 @@ tol = 1e-6;
 % Func_LDM = @func_model_test;
 Func_LDM = @func_model_18th_Apr;
 %% Init guess
-[X,U] =  traj_init_dronecrash(X0,U0,zf,N,P);
+[X,U] =  traj_init_dronecrash(X0,U0,zf,N,P,Func_LDM);
 Z = zeros((n+m)*(N+1),1);
 for i = 1:N+1
     Z(n*(i-1)+1:n*i) = X{i};
     Z(n*(N+1)+i) = U{i};
 end
 Z_last = Z;
+
+plot_results(X,U,dh,N,0);
 %% Main loop
-dh = zf/N;
 M = cell(N+1,2*(N+1));
 F = cell(N+1,1);
 for i = 1:N+1
@@ -89,26 +91,51 @@ F_calc = -dh/2*cell2mat(F);
 %% Optimization
 % find index of the variables in array Z
 id_xf = N*n+1;
-id_v  = (0:N)*n+2;
-id_r  = (0:N)*n+3;
-id_w  = (0:N)*n+6;
+id_x  = (0:N)*n+1; id_v  = (0:N)*n+2; id_r  = (0:N)*n+3;
+id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
+id_u  = n*(N+1)+(1:N+1);
+
+
+%ub(id_r)  = -5/57.3;
+%lb(id_v)  = 0;
+%ub(id_w)  = umax;
+%lb(id_w)  = umin;
+%lb(n*(id_u) = umin;
+%ub(n*(id_u) = umax;
+
+% maximum iteration step of X and U
+dx_itr_tol = 1000;
+dv_itr_tol = 10;
+dr_itr_tol = 30/57.3;
+da_itr_tol = 30/57.3;
+dq_itr_tol = 30/57.3;
+dw_itr_tol = inf;
+du_itr_tol = inf;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
 ub    =  inf((N+1)*(n+m),1);
 
-lb(n*(N+1)+1:end) = umin;
-ub(n*(N+1)+1:end) = umax;
-ub(id_r)  = -5/57.3;
-lb(id_v)  = 0;
-ub(id_w)  = umax;
-lb(id_w)  = umin;
+ub(id_x) = min(Z_last(id_x) + dx_itr_tol, inf);
+lb(id_x) = max(Z_last(id_x) - dx_itr_tol,-inf);
+ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
+lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
+ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
+lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
+ub(id_a) = min(Z_last(id_a) + da_itr_tol, inf);    % alpha < 90
+lb(id_a) = max(Z_last(id_a) - da_itr_tol,-inf);    % alpha > -90
+ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
+lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
+ub(id_w) = min(Z_last(id_w) + dw_itr_tol, umax);    % omega < umax
+lb(id_w) = max(Z_last(id_w) - dw_itr_tol, umin);    % omega > umin
+ub(id_u) = min(Z_last(id_u) + du_itr_tol, umax);    % u < umax
+lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
 
 % Objective function, 
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = -1;
+f_obj(id_xf) = 1;
 
 % call tje solver
 Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
@@ -120,6 +147,7 @@ end
 plot_results(X,U,dh,N,0);
 
 % stop criteria
+display([' tol = ',num2str(norm(Z-Z_last))]);
 if norm(Z-Z_last) < tol
    break; 
 end
@@ -129,3 +157,4 @@ end
 
 %% Plot results
 % plot_results(X,U,dh,N,0);
+k
