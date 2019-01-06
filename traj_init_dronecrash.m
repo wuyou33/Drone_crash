@@ -1,8 +1,6 @@
-function [X,U] = traj_init_dronecrash(X0,U0,hf,N, P,func_LDM)
+function [X,U] = traj_init_dronecrash(X0,U0,dh,N, P,func_LDM)
 % set U as constant U0 and numerically integrate the initial guess of the
 % optimal trajectory.
-
-dh = hf/N;
 
 X = cell(N+1,1); X{1}=X0;
 U = cell(N+1,1); 

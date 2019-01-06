@@ -15,7 +15,7 @@ X0 = [0;                % x0
       -30/57.3;         % gamma0
       -30/57.3;         % alpha0
       0;                % q0
-      1];             % omega0^2 (normalized)
+      0];             % omega0^2 (normalized)
 
 U0 = X0(6);             % u0 (normalized)
 
@@ -32,13 +32,13 @@ n = length(X0);
 m = 1;
 dh = zf/N;
 
-iter_max = 10;
+iter_max = 100;
 tol = 1e-6;
 %% aero model
 % Func_LDM = @func_model_test;
 Func_LDM = @func_model_18th_Apr;
 %% Init guess
-[X,U] =  traj_init_dronecrash(X0,U0,zf,N,P,Func_LDM);
+[X,U] =  traj_init_dronecrash(X0,U0,dh,N,P,Func_LDM);
 Z = zeros((n+m)*(N+1),1);
 for i = 1:N+1
     Z(n*(i-1)+1:n*i) = X{i};
@@ -95,22 +95,14 @@ id_x  = (0:N)*n+1; id_v  = (0:N)*n+2; id_r  = (0:N)*n+3;
 id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
 id_u  = n*(N+1)+(1:N+1);
 
-
-%ub(id_r)  = -5/57.3;
-%lb(id_v)  = 0;
-%ub(id_w)  = umax;
-%lb(id_w)  = umin;
-%lb(n*(id_u) = umin;
-%ub(n*(id_u) = umax;
-
 % maximum iteration step of X and U
-dx_itr_tol = 1000;
+dx_itr_tol = zf;
 dv_itr_tol = 10;
-dr_itr_tol = 30/57.3;
-da_itr_tol = 30/57.3;
-dq_itr_tol = 30/57.3;
-dw_itr_tol = inf;
-du_itr_tol = inf;
+dr_itr_tol = 100/57.3;
+da_itr_tol = 100/57.3;
+dq_itr_tol = 100/57.3;
+dw_itr_tol = 0.5;
+du_itr_tol = 0.5;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -135,16 +127,16 @@ lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = 1;
+f_obj(id_xf) = -1;
 
-% call tje solver
+% call the solver
 Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
    U{i} = Z(n*(N+1)+i);
 end
-plot_results(X,U,dh,N,0);
+plot_results(X,U,dh,N,mod(k,2));
 
 % stop criteria
 display([' tol = ',num2str(norm(Z-Z_last))]);

@@ -23,38 +23,40 @@ function plot_results(X,U,dh,N,cls)
       end
    end
    
-   if cls == 1
+   if cls == 2
        close all;
    end
    
    figure(60)
    subplot(3,2,1);
-   plot(z,x); xlabel('Z [m]'); ylabel('x [m]'); hold on;
+   plot(z,x); xlabel('Z [m]'); ylabel('x [m]'); hold on; if cls == 1, hold off; end
    subplot(3,2,2);
-   plot(z,v); xlabel('Z [m]'); ylabel('V [m/s]'); hold on;
+   plot(z,v); xlabel('Z [m]'); ylabel('V [m/s]'); hold on; if cls == 1, hold off; end
    subplot(3,2,3);
-   plot(z,r); xlabel('Z [m]'); ylabel('\gamma [rad]'); hold on;
+   plot(z,r); xlabel('Z [m]'); ylabel('\gamma [rad]'); hold on; if cls == 1, hold off; end
    subplot(3,2,4);
-   plot(z,a); xlabel('Z [m]'); ylabel('\alpha [rad]'); hold on;
+   plot(z,a); xlabel('Z [m]'); ylabel('\alpha [rad]'); hold on; if cls == 1, hold off; end
    subplot(3,2,5);
-   plot(z,q); xlabel('Z [m]'); ylabel('q [rad/s]'); hold on;
+   plot(z,q); xlabel('Z [m]'); ylabel('q [rad/s]'); hold on; if cls == 1, hold off; end
    subplot(3,2,6);
-   plot(z,w); xlabel('Z [m]'); ylabel('omega^2'); hold on; 
-   plot(z,u); legend('real','cmd');
+   plot(z,w); hold on; if cls == 1, hold off; end
+   xlabel('Z [m]'); ylabel('omega^2'); 
+   plot(z,u); hold on; 
+   legend('real','cmd');  if cls == 1, hold off; end
    
-   figure(61)
-   subplot(3,2,1);
-   plot(t,x); xlabel('t [s]'); ylabel('x [m]'); hold on;
-   subplot(3,2,2);
-   plot(t,v); xlabel('t [s]'); ylabel('V [m/s]'); hold on;
-   subplot(3,2,3);
-   plot(t,r); xlabel('t [s]'); ylabel('\gamma [rad]'); hold on;
-   subplot(3,2,4);
-   plot(t,a); xlabel('t [s]'); ylabel('\alpha [rad]'); hold on;
-   subplot(3,2,5);
-   plot(t,q); xlabel('t [s]'); ylabel('q [rad/s]'); hold on;
-   subplot(3,2,6);
-   plot(t,w); xlabel('t [s]'); ylabel('omega^2'); hold on;
-   plot(t,u); legend('real','cmd');
+%    figure(61)
+%    subplot(3,2,1);hold on; 
+%    plot(t,x); xlabel('t [s]'); ylabel('x [m]'); hold on;
+%    subplot(3,2,2);
+%    plot(t,v); xlabel('t [s]'); ylabel('V [m/s]'); hold on;
+%    subplot(3,2,3);
+%    plot(t,r); xlabel('t [s]'); ylabel('\gamma [rad]'); hold on;
+%    subplot(3,2,4);
+%    plot(t,a); xlabel('t [s]'); ylabel('\alpha [rad]'); hold on;
+%    subplot(3,2,5);
+%    plot(t,q); xlabel('t [s]'); ylabel('q [rad/s]'); hold on;
+%    subplot(3,2,6);
+%    plot(t,w); xlabel('t [s]'); ylabel('omega^2'); hold on;
+%    plot(t,u); legend('real','cmd');
    
 end
