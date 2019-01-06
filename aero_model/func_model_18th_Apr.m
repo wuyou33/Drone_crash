@@ -1,4 +1,4 @@
-function [LDM,flag_hedge] = func_model_18th_Apr(v,a,w)
+function [LDM,flag_hedge] = func_model_18th_Apr(v,a,w,q)
 % user defined longitudinal model to calculate Lift Drag and Moment
 
 vx = v*cos(a);

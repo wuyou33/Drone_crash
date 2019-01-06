@@ -9,7 +9,7 @@ function check_FM_func_hedging(X,U,dh,LDM_func)
     t(1) = 0;
     z = 0:dh:dh*N;
     for i = 1:N+1
-        [LDM(i,:),flag_hedge(i)] = LDM_func(X{i}(2),X{i}(4),X{i}(6));
+        [LDM(i,:),flag_hedge(i)] = LDM_func(X{i}(2),X{i}(4),X{i}(6),X{i}(5));
         if i>1
             % estimate time using the trapezoidal rule
             t(i) = t(i-1) - dh/2*(1/(X{i}(2)*sin(X{i}(3)))+1/(X{i-1}(2)*sin(X{i}(3))));

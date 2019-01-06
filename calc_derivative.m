@@ -3,7 +3,7 @@ function [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative()
 
 
 syms x v r a q w u m g s Iy
-syms D(v,a,w) L(v,a,w) M(v,a,w)
+syms D(v,a,w,q) L(v,a,w,q) M(v,a,w,q)
 
 
 % TODO: add accurate D L M model

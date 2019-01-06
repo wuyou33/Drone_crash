@@ -3,16 +3,16 @@
 close all
 clear all
 
-addpath('aero_model');
+addpath(genpath('aero_model'));
 %%
 % [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative();
 
 %% Prameters & Initialization
 
-zf = 3;               % initial height
+zf = 30;               % initial height
 
 X0 = [0;                % x0
-      3;               % v0
+      3;                % v0
       -30/57.3;         % gamma0
       -30/57.3;         % alpha0
       0;                % q0
@@ -23,18 +23,19 @@ U0 =   0;             % u0 (normalized)
 P = [0.3;               % mass
      0.0013;            % Iy
      9.8124;            % g
-     50];               % act_dyn
+     5];               % act_dyn
 
 N = 100;
 n = length(X0);
 m = 1;
 dh = zf/N;
 
-iter_max = 100;
+iter_max = 500;
 tol = 1e-6;
 %% aero model
 % Func_LDM = @func_model_test;
-Func_LDM = @func_model_18th_Apr;
+% Func_LDM = @func_model_18th_Apr;
+Func_LDM = @func_model_single_rotor;
 %% Init guess
 [X,U] =  traj_init_dronecrash(X0,U0,dh,N,P,Func_LDM);
 Z = zeros((n+m)*(N+1),1);
@@ -98,9 +99,9 @@ dx_itr_tol = zf;
 dv_itr_tol = 10;
 dr_itr_tol = 100/57.3;
 da_itr_tol = 100/57.3;
-dq_itr_tol = 100/57.3;
-dw_itr_tol = 0.5;
-du_itr_tol = 0.5;
+dq_itr_tol = 2000/57.3;
+dw_itr_tol = inf;
+du_itr_tol = inf;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -112,8 +113,8 @@ ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
 lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
 ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
 lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
-ub(id_a) = min(Z_last(id_a) + da_itr_tol, inf);    % alpha < 90
-lb(id_a) = max(Z_last(id_a) - da_itr_tol,-inf);    % alpha > -90
+ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
+lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
 ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
 lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
 ub(id_w) = min(Z_last(id_w) + dw_itr_tol, 1.2);    % omega < omega_max
@@ -125,24 +126,24 @@ lb(id_u) = max(Z_last(id_u) - du_itr_tol, -1);    % u > umin
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = -1;
+f_obj(id_xf) = 1;
 
 % call the solver
-Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+[Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
    U{i} = Z(n*(N+1)+i);
 end
-plot_results(X,U,dh,N,mod(k,2));
+plot_results(X,U,dh,N,1);
 
 % stop criteria
-display([' tol = ',num2str(norm(Z-Z_last))]);
+% display([' tol = ',num2str(norm(Z-Z_last))]);
 if norm(Z-Z_last) < tol
    break; 
 end
 Z_last = Z;
-
+y
 end
 
 %% Plot results
