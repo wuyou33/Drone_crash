@@ -1,4 +1,4 @@
-function LDM = func_model_test(v,a,w)
+function LDM = func_model_test(v,a,w,q)
 % user defined longitudinal model to calculate Lift Drag and Moment
 
 D = 0.0*v*v;

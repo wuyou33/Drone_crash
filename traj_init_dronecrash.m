@@ -8,9 +8,18 @@ for i=1:N+1, U{i,1}=U0; end
 
 % TODO: to improve Numerical stability when gamma and V are
 % small
+% for i = 2:N+1
+%    X{i} = Rk_4(@calc_f,0,X{i-1},U{i-1},dh,P,func_LDM);
+% end
+
 for i = 2:N+1
-   X{i} = Rk_4(@calc_f,0,X{i-1},U{i-1},dh,P,func_LDM);
+   u = U{i}; 
+   X{i} = fsolve(@(x)solve_f(x,u,X{i-1},U{i-1},P,func_LDM,dh),X{i-1}); 
 end
+end
+
+function f = solve_f(x,u,X,U,P,func_LDM,dh)
+f = X + dh/2*(calc_f(X,U,P,func_LDM) + calc_f(x,u,P,func_LDM))-x;
 end
 
 function [X_next] =  Rk_4(F,time,X,U,step,param,func_LDM)

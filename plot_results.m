@@ -28,21 +28,23 @@ function plot_results(X,U,dh,N,cls)
    end
    
    figure(60)
-   subplot(3,2,1);
+   subplot(4,2,1);
    plot(z,x); xlabel('Z [m]'); ylabel('x [m]'); hold on; if cls == 1, hold off; end
-   subplot(3,2,2);
+   subplot(4,2,2);
    plot(z,v); xlabel('Z [m]'); ylabel('V [m/s]'); hold on; if cls == 1, hold off; end
-   subplot(3,2,3);
+   subplot(4,2,3);
    plot(z,r); xlabel('Z [m]'); ylabel('\gamma [rad]'); hold on; if cls == 1, hold off; end
-   subplot(3,2,4);
+   subplot(4,2,4);
    plot(z,a); xlabel('Z [m]'); ylabel('\alpha [rad]'); hold on; if cls == 1, hold off; end
-   subplot(3,2,5);
+   subplot(4,2,5);
    plot(z,q); xlabel('Z [m]'); ylabel('q [rad/s]'); hold on; if cls == 1, hold off; end
-   subplot(3,2,6);
+   subplot(4,2,6);
    plot(z,w); hold on; if cls == 1, hold off; end
    xlabel('Z [m]'); ylabel('omega^2'); 
-   plot(z,u); hold on; 
-   legend('real','cmd');  if cls == 1, hold off; end
+   subplot(4,2,7);   
+   plot(z,u); hold on; if cls == 1, hold off; end
+   xlabel('Z [m]'); ylabel('u'); 
+   
    
 %    figure(61)
 %    subplot(3,2,1);hold on; 

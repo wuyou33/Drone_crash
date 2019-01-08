@@ -8,7 +8,7 @@ addpath('aero_model');
 
 %% Prameters & Initialization
 
-zf = 3;               % initial height
+zf = 30;               % initial height
 
 X0 = [0;                % x0
       3;               % v0
@@ -36,7 +36,9 @@ iter_max = 100;
 tol = 1e-6;
 %% aero model
 % Func_LDM = @func_model_test;
-Func_LDM = @func_model_18th_Apr;
+% Func_LDM = @func_model_18th_Apr;
+Func_LDM = @func_model_single_rotor;
+
 %% Init guess
 [X,U] =  traj_init_dronecrash(X0,U0,dh,N,P,Func_LDM);
 Z = zeros((n+m)*(N+1),1);
@@ -96,13 +98,13 @@ id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
-dx_itr_tol = zf;
-dv_itr_tol = 10;
-dr_itr_tol = 100/57.3;
-da_itr_tol = 100/57.3;
-dq_itr_tol = 100/57.3;
-dw_itr_tol = 0.5;
-du_itr_tol = 0.5;
+dx_itr_tol = 1;
+dv_itr_tol = 1;
+dr_itr_tol = 1/57.3;
+da_itr_tol = 1/57.3;
+dq_itr_tol = 1/57.3;
+dw_itr_tol = 0.01;
+du_itr_tol = 0.01;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -114,8 +116,8 @@ ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
 lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
 ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
 lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
-ub(id_a) = min(Z_last(id_a) + da_itr_tol, inf);    % alpha < 90
-lb(id_a) = max(Z_last(id_a) - da_itr_tol,-inf);    % alpha > -90
+ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
+lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
 ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
 lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
 ub(id_w) = min(Z_last(id_w) + dw_itr_tol, umax);    % omega < umax
@@ -127,10 +129,11 @@ lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = -1;
+% f_obj(id_xf) = -1;
+f_obj(id_u) = -1;
 
 % call the solver
-Z = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+[Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
@@ -144,7 +147,7 @@ if norm(Z-Z_last) < tol
    break; 
 end
 Z_last = Z;
-
+y
 end
 
 %% Plot results
