@@ -1,0 +1,36 @@
+{
+	"folders": [
+		{
+			"path": "/home/sihao/src/monorepo"
+		},
+		{
+			"path": "/home/sihao/src/Firmware"
+		},
+		{
+			"path": "/home/sihao/catkin_ws/src/vrpn_client_ros"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"CMakeLists.txt.template": "cmake"
+		},
+		"editor.tokenColorCustomizations": {
+			"textMateRules": [
+				{
+					"scope": "meta.function-call.arguments",
+					"settings": {
+						"fontStyle": "",
+						"foreground": "#9cdcfeff"
+					}
+				},
+				{
+					"scope": "meta.function-call.generic.python",
+					"settings": {
+						"foreground": "#DCDCAA"
+					}
+				}
+			]
+		},
+		"gitlens.codeLens.enabled": false
+	}
+}
