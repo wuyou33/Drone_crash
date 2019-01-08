@@ -98,13 +98,13 @@ id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
-dx_itr_tol = 1;
-dv_itr_tol = 1;
-dr_itr_tol = 1/57.3;
-da_itr_tol = 1/57.3;
-dq_itr_tol = 1/57.3;
-dw_itr_tol = 0.01;
-du_itr_tol = 0.01;
+dx_itr_tol = 10;
+dv_itr_tol = 10;
+dr_itr_tol = 100/57.3;
+da_itr_tol = 100/57.3;
+dq_itr_tol = 100/57.3;
+dw_itr_tol = 10;
+du_itr_tol = 10;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -113,27 +113,37 @@ ub    =  inf((N+1)*(n+m),1);
 ub(id_x) = min(Z_last(id_x) + dx_itr_tol, inf);
 lb(id_x) = max(Z_last(id_x) - dx_itr_tol,-inf);
 ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
-lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
-ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
+% lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
+% ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
 lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
-ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
-lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
+% ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
+% lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
 ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
 lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
-ub(id_w) = min(Z_last(id_w) + dw_itr_tol, umax);    % omega < umax
-lb(id_w) = max(Z_last(id_w) - dw_itr_tol, umin);    % omega > umin
-ub(id_u) = min(Z_last(id_u) + du_itr_tol, umax);    % u < umax
-lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
+% ub(id_w) = min(Z_last(id_w) + dw_itr_tol, umax);    % omega < umax
+% lb(id_w) = max(Z_last(id_w) - dw_itr_tol, umin);    % omega > umin
+% ub(id_u) = min(Z_last(id_u) + du_itr_tol, umax);    % u < umax
+% lb(id_u) = max(Z_last(id_u) - du_itr_tol, umin);    % u > umin
+lb(id_v) = 0;       % V > 0
+ub(id_r) =-5/57.3;  % gamma < -5/57.3
+ub(id_a) = pi/2;    % alpha < 90
+lb(id_a) =-pi/2;    % alpha > -90
+ub(id_w) = umax;    % omega < umax
+lb(id_w) = umin;    % omega > umin
+ub(id_u) = umax;    % u < umax
+lb(id_u) = umin;    % u > umin
 
 % Objective function, 
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-% f_obj(id_xf) = -1;
-f_obj(id_u) = -1;
+f_obj(id_xf) = -1;
+% f_obj(id_u) = -1;
 
 % call the solver
-[Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+H_obj = zeros(length(Z),length(Z));
+[Z,y] = quadprog(H_obj,f_obj,[],[],M_calc,F_calc,lb,ub);
+% [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
@@ -147,7 +157,7 @@ if norm(Z-Z_last) < tol
    break; 
 end
 Z_last = Z;
-y
+Z_last(40)
 end
 
 %% Plot results
