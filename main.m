@@ -3,7 +3,7 @@
 close all
 clear all
 
-addpath('aero_model');
+addpath(genpath('aero_model'));
 % [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative();
 
 %% Prameters & Initialization
@@ -22,7 +22,7 @@ U0 = X0(6);             % u0 (normalized)
 P = [0.3;               % mass
      0.0013;            % Iy
      9.8124;            % g
-     50];               % act_dyn
+     10];               % act_dyn
 
 umax = 1.2;
 umin = 0;
@@ -98,11 +98,11 @@ id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
-dx_itr_tol = 10;
-dv_itr_tol = 10;
-dr_itr_tol = 100/57.3;
-da_itr_tol = 100/57.3;
-dq_itr_tol = 100/57.3;
+dx_itr_tol = 1;
+dv_itr_tol = 1;
+dr_itr_tol = 5/57.3;
+da_itr_tol = 5/57.3;
+dq_itr_tol = 5/57.3;
 dw_itr_tol = 10;
 du_itr_tol = 10;
 
@@ -137,8 +137,10 @@ lb(id_u) = umin;    % u > umin
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = -1;
+% f_obj(id_xf) = -1;
 % f_obj(id_u) = -1;
+f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
+f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
 
 % call the solver
 H_obj = zeros(length(Z),length(Z));
