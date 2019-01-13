@@ -92,11 +92,11 @@ id_a  = (0:N)*n+4;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
-dx_itr_tol = zf;
-dv_itr_tol = 10;
-dr_itr_tol = 100/57.3;
-da_itr_tol = 100/57.3;
-du_itr_tol = inf;
+dx_itr_tol = 1;
+dv_itr_tol = 1;
+dr_itr_tol = 10/57.3;
+da_itr_tol = 10/57.3;
+du_itr_tol = 10/57.3;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -117,10 +117,13 @@ lb(id_u) = max(Z_last(id_u) - du_itr_tol,-pi/2);    % alpha_ref > -90
 f_obj = zeros((N+1)*(n+m),1); 
 
 % min:1 // max: -1
-f_obj(id_xf) = 1;
+f_obj(id_xf) = -1;
 
 % call the solver
-[Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+% [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+H_obj = zeros(length(Z),length(Z));
+[Z,y] = quadprog(H_obj,f_obj,[],[],M_calc,F_calc,lb,ub);
+
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
@@ -129,12 +132,12 @@ end
 plot_results(X,U,dh,N,1);
 
 % stop criteria
-% display([' tol = ',num2str(norm(Z-Z_last))]);
+display([' tol = ',num2str(norm(Z-Z_last))]);
 if norm(Z-Z_last) < tol
    break; 
 end
 Z_last = Z;
-y
+% y
 end
 
 %% Plot results

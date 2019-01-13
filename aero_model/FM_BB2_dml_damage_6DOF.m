@@ -147,7 +147,7 @@ N2 = SN(2)*(Cq02)*dynhead2*Area;
 N3 = SN(3)*(Cq03)*dynhead3*Area;
 N4 = SN(4)*(Cq04)*dynhead4*Area;
 
-T = T0+T1+T2+T3+T4+T_corr;
+T = T0+T1+T2+T3+T4;
 Fx = X1+X2+X3+X4 + X0;
 Fy = Y1+Y2+Y3+Y4;
 Mx = SL(1)*b*T1 + SL(2)*b*T2 + SL(3)*b*T3 + SL(4)*b*T4 + L1 + L2 + L3 + L4;

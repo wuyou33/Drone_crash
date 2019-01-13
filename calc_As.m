@@ -5,21 +5,21 @@ r = X(3);
 a = X(4);
 % q = X(5);
 % w = X(6);
-% u = U(1);
+u = U(1);
 
 m  = P(1);
 g  = P(2);
 s  = P(3);
 
 % calculate Lift Drag and Moment from the model
-LDM   = func_LDM(v,a,w,0);
+LDM   = func_LDM(v,a);
 L = LDM(1); D = LDM(2);
 
 % calculate aerodynamic derivative
 dv = 0.001; da = 0.001;
 
-dLDMdv = (func_LDM(v+dv,a,w,q)-LDM)/dv;
-dLDMda = (func_LDM(v,a+da,w,q)-LDM)/da;
+dLDMdv = (func_LDM(v+dv,a)-LDM)/dv;
+dLDMda = (func_LDM(v,a+da)-LDM)/da;
 
 Lv = dLDMdv(1); Dv = dLDMdv(2);
 La = dLDMda(1); Da = dLDMda(2);

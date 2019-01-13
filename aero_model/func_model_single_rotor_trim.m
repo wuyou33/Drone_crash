@@ -6,7 +6,7 @@ flag_hedge = 0;
 
 trim = load('trim_BB2_uva.mat');
 
-u = interp2(trim.v,trim.alpha,trim.u',v,a,'extrap')*1000;
+u = interp2(trim.v,trim.alpha,trim.u',v,a,'spline')*1000;
 vx = v*cos(a);
 vz = v*sin(a);
 
