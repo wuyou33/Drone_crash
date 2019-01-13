@@ -14,16 +14,13 @@ zf = 30;               % initial height
 X0 = [0;                % x0
       3;                % v0
       -30/57.3;         % gamma0
-      -30/57.3;         % alpha0
-      0;                % q0
-      0];               % omega0^2 (normalized)
-
-U0 =   0;             % u0 (normalized)
+      -30/57.3];         % alpha0
+      
+U0 =  -30/57.3;             % u0 : alpha_ref
 
 P = [0.3;               % mass
-     0.0013;            % Iy
      9.8124;            % g
-     5];               % act_dyn
+     5];                % inner_loop bandwidth
 
 N = 100;
 n = length(X0);
@@ -35,7 +32,7 @@ tol = 1e-6;
 %% aero model
 % Func_LDM = @func_model_test;
 % Func_LDM = @func_model_18th_Apr;
-Func_LDM = @func_model_single_rotor;
+Func_LDM = @func_model_single_rotor_trim;
 %% Init guess
 [X,U] =  traj_init_dronecrash(X0,U0,dh,N,P,Func_LDM);
 Z = zeros((n+m)*(N+1),1);
@@ -91,7 +88,7 @@ F_calc = -dh/2*cell2mat(F);
 % find index of the variables in array Z
 id_xf = N*n+1;
 id_x  = (0:N)*n+1; id_v  = (0:N)*n+2; id_r  = (0:N)*n+3;
-id_a  = (0:N)*n+4; id_q  = (0:N)*n+5; id_w  = (0:N)*n+6;
+id_a  = (0:N)*n+4;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
@@ -99,8 +96,6 @@ dx_itr_tol = zf;
 dv_itr_tol = 10;
 dr_itr_tol = 100/57.3;
 da_itr_tol = 100/57.3;
-dq_itr_tol = 2000/57.3;
-dw_itr_tol = inf;
 du_itr_tol = inf;
 
 % define constraints
@@ -115,12 +110,8 @@ ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
 lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
 ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
 lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
-ub(id_q) = min(Z_last(id_q) + dq_itr_tol, inf);
-lb(id_q) = max(Z_last(id_q) - dq_itr_tol,-inf);
-ub(id_w) = min(Z_last(id_w) + dw_itr_tol, 1.2);    % omega < omega_max
-lb(id_w) = max(Z_last(id_w) - dw_itr_tol, 0);    % omega > omega_min
-ub(id_u) = min(Z_last(id_u) + du_itr_tol, 1);    % u < umax
-lb(id_u) = max(Z_last(id_u) - du_itr_tol, -1);    % u > umin
+ub(id_u) = min(Z_last(id_u) + du_itr_tol, pi/2);    % alpha_ref < 90
+lb(id_u) = max(Z_last(id_u) - du_itr_tol,-pi/2);    % alpha_ref > -90
 
 % Objective function, 
 f_obj = zeros((N+1)*(n+m),1); 

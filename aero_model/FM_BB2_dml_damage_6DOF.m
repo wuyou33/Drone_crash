@@ -3,6 +3,10 @@ function [F,M] = FM_BB2_dml_damage_6DOF(V,pqr,omega,R,l,b,signr)
 % This models contains the 3-axis forces + moments of a single rotor and
 % the 3-axis forces of a bareframe. The model is not accurate but can be
 % used for calculating a preliminary trajectory
+% The model has been modified from the archieved model. The pitch moment
+% apart from the thrust generated part has been changed to M0. The drag
+% model on the airframe is also introduced as M0;
+% Sihao Sun 13-Jan-2019
 
 %% load aerodynamic model parameters
 persistent model_rotor model_airframe
@@ -42,6 +46,7 @@ end
 CN_airframe = interp1(model_airframe.AoA_airframe,model_airframe.Cz_airframe,alpha,'spline','extrap');
 T0 = -CN_airframe * va * 2;
 X0 = -abs(0.1*T0); % assume X0 is proportional to the airframe normal force
+M0 = (1.3e-3 + 3e-3*(alpha/57.3) + 1.5e-3*(alpha/57.3)^2)*va^2;
 
 % normal force correctness from the flight data
 w_constraint = w;
@@ -111,7 +116,7 @@ Cq03 = P52(alpha3,vv3)*M.k_Cq0;
 Cq04 = P52(alpha4,vv4)*M.k_Cq0;
 
 
-%% Forces and moments of each rotor
+%% Forces and moments of each rotorM0
 T1 = Ct01*dynhead1*Area;
 T2 = Ct02*dynhead2*Area;
 T3 = Ct03*dynhead3*Area;
@@ -146,7 +151,9 @@ T = T0+T1+T2+T3+T4+T_corr;
 Fx = X1+X2+X3+X4 + X0;
 Fy = Y1+Y2+Y3+Y4;
 Mx = SL(1)*b*T1 + SL(2)*b*T2 + SL(3)*b*T3 + SL(4)*b*T4 + L1 + L2 + L3 + L4;
-My = SM(1)*l*T1 + SM(2)*l*T2 + SM(3)*l*T3 + SM(4)*l*T4 + M1 + M2 + M3 + M4;
+% My = SM(1)*l*T1 + SM(2)*l*T2 + SM(3)*l*T3 + SM(4)*l*T4 + M1 + M2 + M3 + M4;
+My = SM(1)*l*T1 + SM(2)*l*T2 + SM(3)*l*T3 + SM(4)*l*T4 + M0;
+
 Mz = b*SL(1)*X1 + b*SL(2)*X2 + b*SL(3)*X3 + b*SL(4)*X4 + ...
      l*SM(1)*Y1 + l*SM(2)*Y2 + l*SM(3)*Y3 + l*SM(4)*Y4 + ...
      N1 + N2 + N3 + N4;

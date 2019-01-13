@@ -2,8 +2,8 @@ function [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative()
 % This script calculate the derivative of system equation
 
 
-syms x v r a q w u m g s Iy
-syms D(v,a,w,q) L(v,a,w,q) M(v,a,w,q)
+syms x v r a u m g s
+syms D(v,a) L(v,a) M(v,a)
 
 
 % TODO: add accurate D L M model
@@ -16,28 +16,22 @@ syms D(v,a,w,q) L(v,a,w,q) M(v,a,w,q)
 dx = -cot(r);                           % X
 dv = (D+m*g*sin(r))/(m*v*sin(r));       % V
 dr = -(L-m*g*cos(r))/(m*v^2*sin(r));    % gamma
-da = -q/(v*sin(r))-dr;                  % alpha
-dq = -M/(Iy*v*sin(r));                  % q
-dw = s/(v*sin(r))*u;   % omega^2
+da = s*a/(v*sin(r))-s*u/(v*sin(r));         % alpha
 
-fs = [dx;dv;dr;da;dq;dw];
-Xs = [x;v;r;a;q;w];
+fs = [dx;dv;dr;da];
+Xs = [x;v;r;a];
 Us = u;
-Ps = [m; Iy; g; s];
+Ps = [m; g; s];
 %%
-As = [diff(dx,x), diff(dx,v), diff(dx,r), diff(dx,a),diff(dx,q),diff(dx,w);
-     diff(dv,x), diff(dv,v), diff(dv,r), diff(dv,a),diff(dv,q),diff(dv,w);
-     diff(dr,x), diff(dr,v), diff(dr,r), diff(dr,a),diff(dr,q),diff(dr,w);
-     diff(da,x), diff(da,v), diff(da,r), diff(da,a),diff(da,q),diff(da,w);
-     diff(dq,x), diff(dq,v), diff(dq,r), diff(dq,a),diff(dq,q),diff(dq,w);
-     diff(dw,x), diff(dw,v), diff(dw,r), diff(dw,a),diff(dw,q),diff(dw,w);];
+As = [diff(dx,x), diff(dx,v), diff(dx,r), diff(dx,a);
+     diff(dv,x), diff(dv,v), diff(dv,r), diff(dv,a);
+     diff(dr,x), diff(dr,v), diff(dr,r), diff(dr,a);
+     diff(da,x), diff(da,v), diff(da,r), diff(da,a)];
 
 Bs = [diff(dx,u);
      diff(dv,u);
      diff(dr,u);
-     diff(da,u);
-     diff(dq,u);
-     diff(dw,u)];
+     diff(da,u)];
 
 bs = fs - As*Xs - Bs*Us; 
 end
