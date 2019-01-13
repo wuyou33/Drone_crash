@@ -28,9 +28,15 @@ m = 1;
 dh = zf/N;
 
 iter_max = 500;
-tol = 1e-6;
-scale_tol = 1;
+tol = 1e-3;
+
+converg_flag = 0;
+thrust_region_scale = 1;
 norm_dZ_last = 0;
+delta = 1;
+theta = 0.8;
+nu = 0;
+y_last = -inf;
 %% aero model
 % Func_LDM = @func_model_test;
 % Func_LDM = @func_model_18th_Apr;
@@ -92,61 +98,90 @@ id_xf = N*n+1;
 id_x  = (0:N)*n+1; id_v  = (0:N)*n+2; id_r  = (0:N)*n+3;
 id_a  = (0:N)*n+4;
 id_u  = n*(N+1)+(1:N+1);
+for l = 1:100
+    % maximum iteration step of X and U
+    dx_itr_tol = 1 * thrust_region_scale;
+    dv_itr_tol = 1 * thrust_region_scale;
+    dr_itr_tol = 3/57.3 * thrust_region_scale;
+    da_itr_tol = 3/57.3 * thrust_region_scale;
+    du_itr_tol = 3/57.3 * thrust_region_scale;
 
-% maximum iteration step of X and U
-dx_itr_tol = 1 * scale_tol;
-dv_itr_tol = 1 * scale_tol;
-dr_itr_tol = 3/57.3 * scale_tol;
-da_itr_tol = 3/57.3 * scale_tol;
-du_itr_tol = 3/57.3 * scale_tol;
+    % define constraints
+    lb    = -inf((N+1)*(n+m),1);
+    ub    =  inf((N+1)*(n+m),1);
 
-% define constraints
-lb    = -inf((N+1)*(n+m),1);
-ub    =  inf((N+1)*(n+m),1);
+    ub(id_x) = min(Z_last(id_x) + dx_itr_tol, inf);
+    lb(id_x) = max(Z_last(id_x) - dx_itr_tol,-inf);
+    ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
+    lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
+    ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
+    lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
+    ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
+    lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
+    ub(id_u) = min(Z_last(id_u) + du_itr_tol, pi/2);    % alpha_ref < 90
+    lb(id_u) = max(Z_last(id_u) - du_itr_tol,-pi/2);    % alpha_ref > -90
 
-ub(id_x) = min(Z_last(id_x) + dx_itr_tol, inf);
-lb(id_x) = max(Z_last(id_x) - dx_itr_tol,-inf);
-ub(id_v) = min(Z_last(id_v) + dv_itr_tol, inf);
-lb(id_v) = max(Z_last(id_v) - dv_itr_tol, 0);       % V > 0
-ub(id_r) = min(Z_last(id_r) + dr_itr_tol,-5/57.3);  % gamma < -5/57.3
-lb(id_r) = max(Z_last(id_r) - dr_itr_tol,-inf);
-ub(id_a) = min(Z_last(id_a) + da_itr_tol, pi/2);    % alpha < 90
-lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
-ub(id_u) = min(Z_last(id_u) + du_itr_tol, pi/2);    % alpha_ref < 90
-lb(id_u) = max(Z_last(id_u) - du_itr_tol,-pi/2);    % alpha_ref > -90
+    % Objective function, 
+    f_obj = zeros((N+1)*(n+m),1); 
 
-% Objective function, 
-f_obj = zeros((N+1)*(n+m),1); 
+    % min:1 // max: -1
+    f_obj(id_xf) = -1;
+    % f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
+    % f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
+    % f_obj(id_r) = -1;
 
-% min:1 // max: -1
-f_obj(id_xf) = -1;
-% f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
-% f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
+    H_obj = zeros(length(Z),length(Z));
 
-% call the solver
-% [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
-H_obj = zeros(length(Z),length(Z));
-[Z,y] = quadprog(H_obj,f_obj,[],[],M_calc,F_calc,lb,ub);
+    % call the solver
+    % [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
+    [Z,y] = quadprog(H_obj,f_obj,[],[],M_calc,F_calc,lb,ub);
+    
+    norm_dy = norm(y-y_last);
+    if nu == -1 && norm_dy < delta/2 * thrust_region_scale^2
+        y_last = y; nu = 0;
+        break;
+    elseif nu == 1 && norm_dy >= delta/2 * thrust_region_scale^2
+        y_last = y; nu = 0;
+        thrust_region_scale = theta*thrust_region_scale; 
+        break;
+    end
 
+    if norm_dy > delta/2 * thrust_region_scale^2
+        nu = -1;
+    elseif norm_dy < delta/2 * thrust_region_scale^2 && norm_dy>tol
+        nu = 1;
+    else
+        nu = 0; converg_flag = 1;
+        break;
+    end
+    
+    y_last = y;
+    thrust_region_scale = thrust_region_scale * theta^nu;
+end
 
 for i = 1:N+1
    X{i} = Z((i-1)*n+1:i*n);
    U{i} = Z(n*(N+1)+i);
 end
+
+
 plot_results(X,U,dh,N,1);
 
 % stop criteria
-display([' tol = ',num2str(norm(Z-Z_last))]);
-norm_dZ =  norm(Z-Z_last);
-if norm_dZ < tol
-   break; 
-end
-if abs(norm_dZ - norm_dZ_last) < 0.0001
-    scale_tol = scale_tol * 2;
-end
-norm_dZ_last = norm_dZ;
+display([' tol_x = ',num2str(norm(Z-Z_last))]);
+display([' tol_y = ',num2str(norm_dy)]);
+display([' thrust_region_scale = ',num2str(thrust_region_scale)]);
+
 Z_last = Z;
-% y
+
+if num2str(norm(Z-Z_last)) < tol
+   converg_flag = 2;
+end
+
+if converg_flag == 1 || converg_flag == 2
+    display(['Converg! Type = ',num2str(converg_flag)]);
+    break;
+end
 end
 
 %% Plot results
