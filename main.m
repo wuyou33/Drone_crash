@@ -29,6 +29,8 @@ dh = zf/N;
 
 iter_max = 500;
 tol = 1e-6;
+scale_tol = 1;
+norm_dZ_last = 0;
 %% aero model
 % Func_LDM = @func_model_test;
 % Func_LDM = @func_model_18th_Apr;
@@ -92,11 +94,11 @@ id_a  = (0:N)*n+4;
 id_u  = n*(N+1)+(1:N+1);
 
 % maximum iteration step of X and U
-dx_itr_tol = 1;
-dv_itr_tol = 1;
-dr_itr_tol = 10/57.3;
-da_itr_tol = 10/57.3;
-du_itr_tol = 10/57.3;
+dx_itr_tol = 1 * scale_tol;
+dv_itr_tol = 1 * scale_tol;
+dr_itr_tol = 3/57.3 * scale_tol;
+da_itr_tol = 3/57.3 * scale_tol;
+du_itr_tol = 3/57.3 * scale_tol;
 
 % define constraints
 lb    = -inf((N+1)*(n+m),1);
@@ -118,6 +120,8 @@ f_obj = zeros((N+1)*(n+m),1);
 
 % min:1 // max: -1
 f_obj(id_xf) = -1;
+% f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
+% f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
 
 % call the solver
 % [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
@@ -133,9 +137,14 @@ plot_results(X,U,dh,N,1);
 
 % stop criteria
 display([' tol = ',num2str(norm(Z-Z_last))]);
-if norm(Z-Z_last) < tol
+norm_dZ =  norm(Z-Z_last);
+if norm_dZ < tol
    break; 
 end
+if abs(norm_dZ - norm_dZ_last) < 0.0001
+    scale_tol = scale_tol * 2;
+end
+norm_dZ_last = norm_dZ;
 Z_last = Z;
 % y
 end
