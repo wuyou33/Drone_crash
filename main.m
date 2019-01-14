@@ -26,6 +26,7 @@ N = 100;
 n = length(X0);
 m = 1;
 dh = zf/N;
+xf = 20;
 
 iter_max = 500;
 tol = 1e-3;
@@ -43,7 +44,7 @@ y_last = -inf;
 Func_LDM = @func_model_single_rotor_trim;
 %% Init guess
 [X,U] =  traj_init_dronecrash(X0,U0,dh,N,P,Func_LDM);
-Z = zeros((n+m)*(N+1),1);
+Z = zeros((n+m)*(N+1) + 1,1);
 for i = 1:N+1
     Z(n*(i-1)+1:n*i) = X{i};
     Z(n*(N+1)+i) = U{i};
@@ -92,12 +93,23 @@ end
 M_calc = cell2mat(M);
 F_calc = -dh/2*cell2mat(F);
 
+% add another variable at the end of Z to regulate xf (chi)
+M_calc = [M_calc, zeros(size(M_calc,1),1)];
+
 %% Optimization
 % find index of the variables in array Z
 id_xf = N*n+1;
 id_x  = (0:N)*n+1; id_v  = (0:N)*n+2; id_r  = (0:N)*n+3;
 id_a  = (0:N)*n+4;
 id_u  = n*(N+1)+(1:N+1);
+id_chi = n*(N+1) + m*(N+1) + 1;
+
+% set constraints x+chi >= xf && x-chi <= xf (|x-xf|<=chi)
+M_neq = zeros(2,length(Z));
+F_neq = zeros(2,1);
+M_neq(1,id_xf) = -1; M_neq(1,id_chi) = -1; F_neq(1) = -xf;
+M_neq(2,id_xf) =  1; M_neq(2,id_chi) = -1; F_neq(2) =  xf;
+
 for l = 1:100
     % maximum iteration step of X and U
     dx_itr_tol = 1 * thrust_region_scale;
@@ -107,8 +119,8 @@ for l = 1:100
     du_itr_tol = 3/57.3 * thrust_region_scale;
 
     % define constraints
-    lb    = -inf((N+1)*(n+m),1);
-    ub    =  inf((N+1)*(n+m),1);
+    lb    = -inf(size(Z));
+    ub    =  inf(size(Z));
 
     ub(id_x) = min(Z_last(id_x) + dx_itr_tol, inf);
     lb(id_x) = max(Z_last(id_x) - dx_itr_tol,-inf);
@@ -120,21 +132,23 @@ for l = 1:100
     lb(id_a) = max(Z_last(id_a) - da_itr_tol,-pi/2);    % alpha > -90
     ub(id_u) = min(Z_last(id_u) + du_itr_tol, pi/2);    % alpha_ref < 90
     lb(id_u) = max(Z_last(id_u) - du_itr_tol,-pi/2);    % alpha_ref > -90
-
+    lb(id_chi) = 0;      % chi > 0
+    
     % Objective function, 
-    f_obj = zeros((N+1)*(n+m),1); 
+    f_obj = zeros(size(Z)); 
 
     % min:1 // max: -1
-    f_obj(id_xf) = -1;
-    % f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
-    % f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
-    % f_obj(id_r) = -1;
+%     f_obj(id_xf) = -1;
+%     f_obj(id_r) = -1;
+%     f_obj(id_v) = -1./(Z(id_v).^2.*sin(Z(id_r)));
+%     f_obj(id_r) = -cos(Z(id_r))./(Z(id_v).*sin(Z(id_r)).^2);
+    f_obj(id_chi) = 1;
 
     H_obj = zeros(length(Z),length(Z));
 
     % call the solver
     % [Z,y] = linprog(f_obj,[],[],M_calc,F_calc,lb,ub);
-    [Z,y] = quadprog(H_obj,f_obj,[],[],M_calc,F_calc,lb,ub);
+    [Z,y] = quadprog(H_obj,f_obj,M_neq,F_neq,M_calc,F_calc,lb,ub);
     
     norm_dy = norm(y-y_last);
     if nu == -1 && norm_dy < delta/2 * thrust_region_scale^2
@@ -182,6 +196,7 @@ if converg_flag == 1 || converg_flag == 2
     display(['Converg! Type = ',num2str(converg_flag)]);
     break;
 end
+Z(id_chi)
 end
 
 %% Plot results

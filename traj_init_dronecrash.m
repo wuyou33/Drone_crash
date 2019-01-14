@@ -4,7 +4,7 @@ function [X,U] = traj_init_dronecrash(X0,U0,dh,N, P,func_LDM)
 
 X = cell(N+1,1); X{1}=X0;
 U = cell(N+1,1); 
-for i=1:N+1, U{i,1}=U0; end
+for i=1:N+1, U{i,1}=U0{i}; end
 
 % TODO: to improve Numerical stability when gamma and V are
 % small
