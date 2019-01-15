@@ -4,6 +4,7 @@ close all
 clear all
 
 addpath(genpath('aero_model'));
+addpath('state_equations');
 %%
 % [As,Bs,bs,Xs,Us,Ps,fs] = calc_derivative();
 
@@ -14,13 +15,14 @@ zf = 30;               % initial height
 X0 = [0;                % x0
       3;                % v0
       -30/57.3;         % gamma0
-      -30/57.3];         % alpha0
+      -30/57.3];        % alpha0
       
-U0 =  -30/57.3;             % u0 : alpha_ref
+U0 =  -30/57.3;         % u0 : alpha_ref
 
-P = [0.3;               % mass
-     9.8124;            % g
-     5];                % inner_loop bandwidth
+P.m = 0.3;              % mass
+P.g = 9.8124;           % g
+P.s = 5;                % inner_loop bandwidth
+P.Iy = 0.0012;          % moment of inertia
 
 N = 100;
 n = length(X0);
@@ -204,10 +206,13 @@ end
 k
 
 return
-%% save traj for LQR
+%% save traj and calculate LQR gains
 trim = load('trim_BB2_uva.mat');
 for i = 1:N+1
    u_trim = interp2(trim.v,trim.alpha,trim.u',X{i}(2),X{i}(4),'spline');
-   X{i} = [X{i};0;u_trim];
+   X_5D{i} = [X{i};0];
+   U_5D{i} = u_trim;
 end
-save traj2 X
+
+K_lqr = calc_lqr(X_5D,U_5D,P,@func_model_single_rotor);
+save Traj X_5D U_5D K_lqr

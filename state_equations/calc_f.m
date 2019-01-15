@@ -5,9 +5,9 @@ r = X(3);
 a = X(4);
 u = U(1);
 
-m  = P(1);
-g  = P(2);
-s  = P(3);
+m  = P.m;
+g  = P.g;
+s  = P.s;
 
 % calculate Lift Drag and Moment from the model
 LDM   = func_LDM(v,a);
