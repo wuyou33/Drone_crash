@@ -202,3 +202,12 @@ end
 %% Plot results
 % plot_results(X,U,dh,N,0);
 k
+
+return
+%% save traj for LQR
+trim = load('trim_BB2_uva.mat');
+for i = 1:N+1
+   u_trim = interp2(trim.v,trim.alpha,trim.u',X{i}(2),X{i}(4),'spline');
+   X{i} = [X{i};0;u_trim];
+end
+save traj2 X
